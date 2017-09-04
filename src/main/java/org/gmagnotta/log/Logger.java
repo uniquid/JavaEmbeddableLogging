@@ -161,6 +161,15 @@ public class Logger {
 	}
 
 	/**
+	 * Log as trace level
+	 * 
+	 * @param message message to log
+	 */
+	public void trace(String message, Throwable throwable) {
+		log(LogLevel.TRACE, message, throwable);
+	}
+	
+	/**
 	 * Log as debug level
 	 * 
 	 * @param message
@@ -168,6 +177,16 @@ public class Logger {
 	 */
 	public void debug(String message) {
 		log(LogLevel.DEBUG, message);
+	}
+	
+	/**
+	 * Log as debug level
+	 * 
+	 * @param message
+	 *            message to log
+	 */
+	public void debug(String message, Throwable throwable) {
+		log(LogLevel.DEBUG, message, throwable);
 	}
 
 	/**
@@ -179,6 +198,16 @@ public class Logger {
 	public void info(String message) {
 		log(LogLevel.INFO, message);
 	}
+	
+	/**
+	 * Log as info level
+	 * 
+	 * @param message
+	 *            message to log
+	 */
+	public void info(String message, Throwable throwable) {
+		log(LogLevel.INFO, message, throwable);
+	}
 
 	/**
 	 * Log as warning level
@@ -188,6 +217,16 @@ public class Logger {
 	 */
 	public void warning(String message) {
 		log(LogLevel.WARNING, message);
+	}
+	
+	/**
+	 * Log as warning level
+	 * 
+	 * @param message
+	 *            message to log
+	 */
+	public void warning(String message, Throwable throwable) {
+		log(LogLevel.WARNING, message, throwable);
 	}
 	
 	/**
@@ -254,15 +293,6 @@ public class Logger {
 
 	}
 	
-	/**
-	 * Log as event level
-	 * 
-	 * @param message message to log
-	 */
-	public void event(String message) {
-		log(LogLevel.EVENT, message);
-	}
-
 	/**
 	 * Log the stack trace dump at given log level
 	 * 
