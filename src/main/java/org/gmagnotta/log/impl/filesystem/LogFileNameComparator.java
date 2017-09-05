@@ -8,6 +8,16 @@ import java.util.Date;
  * A log file name comparator
  */
 public class LogFileNameComparator implements Comparator<String> {
+	
+	boolean reverse;
+	
+	public LogFileNameComparator() {
+		this(false);
+	}
+	
+	public LogFileNameComparator(boolean reverse) {
+		this.reverse = reverse;
+	}
 
 	@Override
 	public int compare(String logFileName1, String logFileName2) {
@@ -21,6 +31,10 @@ public class LogFileNameComparator implements Comparator<String> {
 			// Get result
 			int result = compare(logFileDate1, logFileDate2);
 
+			if (reverse) {
+				return -result;
+			}
+			
 			return result;
 
 		} catch (ParseException ex) {

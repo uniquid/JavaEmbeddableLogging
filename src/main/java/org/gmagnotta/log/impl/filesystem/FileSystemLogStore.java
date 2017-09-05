@@ -57,6 +57,25 @@ public class FileSystemLogStore {
 		return logFileNames;
 
 	}
+	
+	/**
+	 * Get list of log file name order from the older to the newest.
+	 * 
+	 * @return a list of log file names as {@link String}
+	 * @throws IOException
+	 *             if an error occurs getting log file names
+	 */
+	public List<String> getReversedOrderedLogFileNames() throws IOException {
+
+		// Get log file names
+		List<String> logFileNames = getOrderedLogFileNames();
+
+		// Order log file names
+		Collections.sort(logFileNames, new LogFileNameComparator(true));
+
+		return logFileNames;
+
+	}
 
 	/**
 	 * Get the active log file name, means the log file name that can be used in
