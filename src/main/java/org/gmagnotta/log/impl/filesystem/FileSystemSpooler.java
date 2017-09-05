@@ -46,8 +46,8 @@ public class FileSystemSpooler implements Runnable {
 
 					}
 
-					// Fetch 100 elements
-					int count = Integer.max(list.size(), MAX_ELEMENTS_TO_SPOOL);
+					// Fetch max 100 elements
+					int count = Integer.min(list.size(), MAX_ELEMENTS_TO_SPOOL);
 
 					while (count-- > 0) {
 
