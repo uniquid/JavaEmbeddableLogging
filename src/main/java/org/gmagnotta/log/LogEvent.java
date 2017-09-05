@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Represents an information that should be logged
  */
-public class LogMessage {
+public class LogEvent {
 	
 	private LogLevel logLevel;
 	private String sourceClass;
@@ -28,7 +28,7 @@ public class LogMessage {
 	 * @param message
 	 *            log message
 	 */
-	public LogMessage(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message) {
+	public LogEvent(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message) {
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass.getName();
 		this.date = date;
@@ -50,7 +50,7 @@ public class LogMessage {
 	 * @param message
 	 *            log message
 	 */
-	public LogMessage(LogLevel logLevel, String sourceClass, Date date, String threadName, String message) {
+	public LogEvent(LogLevel logLevel, String sourceClass, Date date, String threadName, String message) {
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass;
 		this.date = date;
@@ -74,7 +74,7 @@ public class LogMessage {
 	 * @param throwable
 	 *            throwable to log
 	 */
-	public LogMessage(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message,
+	public LogEvent(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message,
 			Throwable throwable) {
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass.getName();
@@ -100,7 +100,7 @@ public class LogMessage {
 	 * @param throwable
 	 *            throwable to log
 	 */
-	public LogMessage(LogLevel logLevel, String sourceClass, Date date, String threadName, String message,
+	public LogEvent(LogLevel logLevel, String sourceClass, Date date, String threadName, String message,
 			Throwable throwable) {
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass;

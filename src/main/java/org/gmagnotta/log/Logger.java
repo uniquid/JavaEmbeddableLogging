@@ -1,103 +1,12 @@
 package org.gmagnotta.log;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 
 public class Logger {
 	
-	private static final Object SYNCHRONIZE_OBJECT = new Object();
-
-	private static final List<LoggerStrategy> LOGGER_STATEGIES = new ArrayList<LoggerStrategy>();
-
 	private String sourceClass;
-
-	/**
-	 * Add given logger strategy
-	 * 
-	 * @param loggerStrategy
-	 *            logger strategy
-	 */
-	public static void addLoggerStrategy(LoggerStrategy loggerStrategy) {
-		
-		synchronized (SYNCHRONIZE_OBJECT) {
-
-			// Add logger strategy
-			LOGGER_STATEGIES.add(loggerStrategy);
-
-		}
-		
-	}
-
-	/**
-	 * Remove given logger strategy
-	 * 
-	 * @param loggerStrategy
-	 *            logger strategy
-	 */
-	public static void removeLoggerStrategy(LoggerStrategy loggerStrategy) {
-		
-		synchronized (SYNCHRONIZE_OBJECT) {
-
-			// Remove logger strategy
-			LOGGER_STATEGIES.remove(loggerStrategy);
-
-		}
-		
-	}
-
-	/**
-	 * Remove all logger strategy
-	 */
-	public static void removeLoggerStrategies() {
-		
-		synchronized (SYNCHRONIZE_OBJECT) {
-			
-			// Remove all logger strategy
-			LOGGER_STATEGIES.clear();
-
-		}
-		
-	}
-
-	/**
-	 * Get all logger strategies
-	 * 
-	 * @return list of {@link LoggerStrategy}
-	 */
-	public static List<LoggerStrategy> getLoggerStrategies() {
-		
-		synchronized (SYNCHRONIZE_OBJECT) {
-			
-			return LOGGER_STATEGIES;
-			
-		}
-	}
-
-	/**
-	 * Stop logger and wait for all logger thread termination
-	 * 
-	 * @throws InterruptedException
-	 *             if thread is interrupted when waiting for termination
-	 */
-	public static void stop() throws InterruptedException {
-		
-		synchronized (SYNCHRONIZE_OBJECT) {
-
-			for (Iterator<LoggerStrategy> iterator = LOGGER_STATEGIES.iterator(); iterator.hasNext();) {
-
-				// Get next logger strategy
-				LoggerStrategy loggerStrategy = (LoggerStrategy) iterator.next();
-
-				// Stop logger strategy
-				loggerStrategy.stop();
-
-			}
-
-		}
-		
-	}
+	
+	private static final LogEventCollector LOG_EVENT_COLLECTOR = LogEventCollector.getInstance();
 
 	/**
 	 * Get logger for given source class
@@ -277,42 +186,6 @@ public class Logger {
 	}
 
 	/**
-	 * Log as error level
-	 * 
-	 * @param message
-	 *            log message
-	 * @param exception
-	 *            exception to log
-	 */
-	public void error(String message, Exception exception) {
-
-		// Cast to throwable
-		Throwable throwable = (Throwable) exception;
-
-		log(LogLevel.ERROR, message, throwable);
-
-	}
-	
-	/**
-	 * Log the stack trace dump at given log level
-	 * 
-	 * @param logLevel
-	 *            the log level
-	 * @param message
-	 *            message to log
-	 */
-	public void dumpStackTrace(LogLevel logLevel, String message) {
-
-		// Create log stack trace throwable for debug purpose
-		LogStackTraceThrowable logStackTraceThrowable = new LogStackTraceThrowable(
-				message);
-
-		// Log
-		log(logLevel, message, logStackTraceThrowable);
-
-	}
-
-	/**
 	 * Log
 	 * 
 	 * @param logLevel
@@ -329,7 +202,7 @@ public class Logger {
 		String threadName = currentThread.getName();
 
 		// Create log
-		LogMessage log = new LogMessage(logLevel, sourceClass, new Date(), threadName, message);
+		LogEvent log = new LogEvent(logLevel, sourceClass, new Date(), threadName, message);
 
 		// Call logger connector
 		log(log);
@@ -355,7 +228,7 @@ public class Logger {
 		String threadName = currentThread.getName();
 
 		// Create log
-		LogMessage log = new LogMessage(logLevel, sourceClass, new Date(), threadName, message, throwable);
+		LogEvent log = new LogEvent(logLevel, sourceClass, new Date(), threadName, message, throwable);
 
 		// Call logger connector
 		log(log);
@@ -367,21 +240,9 @@ public class Logger {
 	 * 
 	 * @param log
 	 */
-	void log(LogMessage log) {
+	private void log(LogEvent log) {
 
-		synchronized (SYNCHRONIZE_OBJECT) {
-
-			for (Iterator<LoggerStrategy> iterator = LOGGER_STATEGIES.iterator(); iterator.hasNext();) {
-
-				// Get next logger strategy
-				LoggerStrategy loggerStrategy = (LoggerStrategy) iterator.next();
-
-				// Log
-				loggerStrategy.log(log);
-
-			}
-
-		}
+		LOG_EVENT_COLLECTOR.addLogEvent(log);
 
 	}
 	

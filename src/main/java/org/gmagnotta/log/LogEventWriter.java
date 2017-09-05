@@ -3,27 +3,14 @@ package org.gmagnotta.log;
 /**
  * Interface that allow to implement Strategy design Pattern 
  */
-public interface LoggerStrategy {
-	
-	/**
-	 * Return log level
-	 * 
-	 * @return
-	 */
-	public LogLevel getLogLevel();
-	
-	/**
-	 * Set log level
-	 * @param logLevel
-	 */
-	public void setLogLevel(LogLevel logLevel);
+public interface LogEventWriter {
 	
 	/**
 	 * Perform log
 	 * 
 	 * @param log
 	 */
-	public void log(LogMessage log);
+	public void write(LogEvent log);
 
 	/**
 	 * Stop logger strategy and wait for its thread termination
