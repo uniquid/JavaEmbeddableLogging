@@ -10,13 +10,13 @@ import java.util.List;
 import org.gmagnotta.log.LogEvent;
 import org.gmagnotta.log.LogEventWriter;
 
-public class FileSystemLoggerStrategy implements LogEventWriter {
+public class FileSystemLogEventWriter implements LogEventWriter {
 
 	private FileSystemLogStore logStore;
 	private LinkedList<LogEvent> list;
 	private Thread thread;
 
-	public FileSystemLoggerStrategy(FileSystemLogStore logStore) throws FileNotFoundException {
+	public FileSystemLogEventWriter(FileSystemLogStore logStore) throws FileNotFoundException {
 
 		this.logStore = logStore;
 		this.list = new LinkedList<LogEvent>();

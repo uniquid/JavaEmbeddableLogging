@@ -11,17 +11,17 @@ import org.gmagnotta.log.LogEventWriter;
 /**
  * A logger strategy that redirects all output to System.out
  */
-public class SystemLoggerStrategy implements LogEventWriter {
+public class ConsoleLogEventWriter implements LogEventWriter {
 
 	private static final String defaultDateFormat = "dd/MM/yyyy HH:mm:ss.SSS";
 
 	private String dateFormat;
 
-	public SystemLoggerStrategy() {
+	public ConsoleLogEventWriter() {
 		this(defaultDateFormat);
 	}
 
-	public SystemLoggerStrategy(String dateFormat) {
+	public ConsoleLogEventWriter(String dateFormat) {
 		this.dateFormat = dateFormat;
 	}
 
