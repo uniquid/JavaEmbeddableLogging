@@ -15,7 +15,8 @@ public class LogEventCollector {
 
 	private LinkedBlockingQueue<LogEvent> logEventsQueue;
 	private LogLevel logLevelThreshold;
-	private List<LogEventWriter> strategies;
+	private List<LogEventWriter> writers;
+	private List<LogEventFilter> filters;
 	private Thread writer;
 
 	public static synchronized LogEventCollector getInstance() {
@@ -32,8 +33,9 @@ public class LogEventCollector {
 
 		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
 		this.logLevelThreshold = LogLevel.INFO;
-		this.strategies = new CopyOnWriteArrayList<LogEventWriter>();
-		this.writer = new Thread(new LogEventSpooler(logEventsQueue, strategies));
+		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
+		this.filters = new CopyOnWriteArrayList<LogEventFilter>();
+		this.writer = new Thread(new LogEventSpooler(logEventsQueue, writers));
 
 		writer.setDaemon(true);
 		writer.start();
@@ -52,11 +54,41 @@ public class LogEventCollector {
 
 		// If level is bigger than threshold add to queue
 		if (logLevel.compareTo(getLogLevelThreshold()) >= 0) {
+			
+			// if filters can accept the log event
+			if (canAccept(logEvent)) {
 
-			logEventsQueue.add(logEvent);
-
+				logEventsQueue.add(logEvent);
+			
+			}
+			
 		}
 
+	}
+	
+	/**
+	 * Utility method that fails as long as there is a filter that can't accept the event
+	 * 
+	 * @param logEvent
+	 * @return
+	 */
+	private boolean canAccept(LogEvent logEvent) {
+		
+		boolean canAccept = true;
+		
+		for (LogEventFilter filter : filters) {
+
+			if (!filter.accept(logEvent)) {
+
+				canAccept = false;
+				break;
+			
+			}
+		
+		}
+		
+		return canAccept;
+		
 	}
 
 	/**
@@ -92,15 +124,73 @@ public class LogEventCollector {
 	/**
 	 * Add given logger strategy
 	 * 
-	 * @param loggerStrategy
+	 * @param logEventWriter
 	 *            logger strategy
 	 */
-	public void addLoggerStrategy(LogEventWriter loggerStrategy) {
+	public void addLogEventWriter(LogEventWriter logEventWriter) {
 
 		synchronized (SYNC_OBJ) {
 
-			// Add logger strategy
-			strategies.add(loggerStrategy);
+			writers.add(logEventWriter);
+
+		}
+
+	}
+
+	/**
+	 * Remove given logger strategy
+	 * 
+	 * @param logEventWriter
+	 *            logger strategy
+	 */
+	public void removeLogEventWriter(LogEventWriter logEventWriter) {
+
+		synchronized (SYNC_OBJ) {
+
+			writers.remove(logEventWriter);
+
+		}
+
+	}
+
+	/**
+	 * Remove all logger strategy
+	 */
+	public void removeLogEventWriters() {
+
+		synchronized (SYNC_OBJ) {
+
+			writers.clear();
+
+		}
+
+	}
+
+	/**
+	 * Get all logger strategies
+	 * 
+	 * @return list of {@link LogEventWriter}
+	 */
+	public List<LogEventWriter> getLogEventWriters() {
+
+		synchronized (SYNC_OBJ) {
+
+			return writers;
+
+		}
+	}
+
+	/**
+	 * Add given logger strategy
+	 * 
+	 * @param loggerStrategy
+	 *            logger strategy
+	 */
+	public void addLogEventFilter(LogEventFilter logEventFilter) {
+
+		synchronized (SYNC_OBJ) {
+
+			filters.add(logEventFilter);
 
 		}
 
@@ -112,12 +202,11 @@ public class LogEventCollector {
 	 * @param loggerStrategy
 	 *            logger strategy
 	 */
-	public void removeLoggerStrategy(LogEventWriter loggerStrategy) {
+	public void removeLogEventFilter(LogEventFilter logEventFilter) {
 
 		synchronized (SYNC_OBJ) {
 
-			// Remove logger strategy
-			strategies.remove(loggerStrategy);
+			filters.remove(logEventFilter);
 
 		}
 
@@ -126,29 +215,14 @@ public class LogEventCollector {
 	/**
 	 * Remove all logger strategy
 	 */
-	public void removeLoggerStrategies() {
+	public void removeLogEventFilters() {
 
 		synchronized (SYNC_OBJ) {
 
-			// Remove all logger strategy
-			strategies.clear();
+			filters.clear();
 
 		}
 
-	}
-
-	/**
-	 * Get all logger strategies
-	 * 
-	 * @return list of {@link LogEventWriter}
-	 */
-	public List<LogEventWriter> getLoggerStrategies() {
-
-		synchronized (SYNC_OBJ) {
-
-			return strategies;
-
-		}
 	}
 
 	/**
@@ -164,10 +238,9 @@ public class LogEventCollector {
 			// interrupt writer
 			writer.interrupt();
 
-			for (LogEventWriter loggerStrategy : strategies) {
+			for (LogEventWriter logEventWriter : writers) {
 
-				// Stop logger strategy
-				loggerStrategy.stop();
+				logEventWriter.stop();
 
 			}
 
