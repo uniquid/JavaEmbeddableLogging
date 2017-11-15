@@ -2,6 +2,9 @@ package org.gmagnotta.log;
 
 import java.util.Date;
 
+/**
+ * This class is used to log messages.
+ */
 public class Logger {
 	
 	private String sourceClass;
