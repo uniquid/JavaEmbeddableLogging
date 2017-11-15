@@ -1,9 +1,11 @@
 package org.gmagnotta.log;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * Spooler class that takes log events from the queue and send them to each logger strategy
+ */
 public class LogEventSpooler implements Runnable {
 
 	private LinkedBlockingQueue<LogEvent> logEventsQueue;
@@ -22,13 +24,11 @@ public class LogEventSpooler implements Runnable {
 			try {
 
 				LogEvent logEvent = logEventsQueue.take();
-
-				for (Iterator<LogEventWriter> iterator = strategies.iterator(); iterator.hasNext();) {
-
-					// Get next logger strategy
-					LogEventWriter loggerStrategy = (LogEventWriter) iterator.next();
-
-					// Stop logger strategy
+				
+				// Get next logger strategy
+				for (LogEventWriter loggerStrategy : strategies) {
+					
+					// write event logger strategy
 					loggerStrategy.write(logEvent);
 
 				}
