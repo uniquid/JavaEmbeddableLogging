@@ -6,13 +6,16 @@ import java.util.Date;
  * Represents an information that should be logged
  */
 public class LogEvent {
-	
+
+	private static final String UNSET_MARKER = "UNSET";
+
 	private LogLevel logLevel;
 	private String sourceClass;
 	private Date date;
 	private String threadName;
 	private String message;
 	private Throwable throwable;
+	private String marker;
 	
 	/**
 	 * Create new log
@@ -29,11 +32,7 @@ public class LogEvent {
 	 *            log message
 	 */
 	public LogEvent(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message) {
-		this.logLevel = logLevel;
-		this.sourceClass = sourceClass.getName();
-		this.date = date;
-		this.threadName = threadName;
-		this.message = message;
+		this(logLevel, sourceClass.getName(), date, threadName, message);
 	}
 
 	/**
@@ -51,6 +50,27 @@ public class LogEvent {
 	 *            log message
 	 */
 	public LogEvent(LogLevel logLevel, String sourceClass, Date date, String threadName, String message) {
+		this(UNSET_MARKER, logLevel, sourceClass, date, threadName, message);
+	}
+
+	/**
+	 * Create new log
+	 *
+	 * @param marker
+	 *            marker string to attach to this event
+	 * @param logLevel
+	 *            log level
+	 * @param sourceClass
+	 *            source class
+	 * @param date
+	 *            log date
+	 * @param threadName
+	 *            the name of thread who generate the log
+	 * @param message
+	 *            log message
+	 */
+	public LogEvent(String marker, LogLevel logLevel, String sourceClass, Date date, String threadName, String message) {
+		this.marker = marker;
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass;
 		this.date = date;
@@ -76,12 +96,7 @@ public class LogEvent {
 	 */
 	public LogEvent(LogLevel logLevel, Class<?> sourceClass, Date date, String threadName, String message,
 			Throwable throwable) {
-		this.logLevel = logLevel;
-		this.sourceClass = sourceClass.getName();
-		this.date = date;
-		this.threadName = threadName;
-		this.message = message;
-		this.throwable = throwable;
+		this(logLevel, sourceClass.getName(), date, threadName, message);
 	}
 
 	/**
@@ -102,12 +117,45 @@ public class LogEvent {
 	 */
 	public LogEvent(LogLevel logLevel, String sourceClass, Date date, String threadName, String message,
 			Throwable throwable) {
+		this(UNSET_MARKER, logLevel, sourceClass, date, threadName, message, throwable);
+	}
+
+	/**
+	 * Create new log
+	 *
+	 * @param marker
+	 *            marker string to attach to this event
+	 * @param logLevel
+	 *            log level
+	 * @param sourceClass
+	 *            source class
+	 * @param date
+	 *            log date
+	 * @param threadName
+	 *            the name of thread who generate the log
+	 * @param message
+	 *            log message
+	 * @param throwable
+	 *            throwable to log
+	 */
+	public LogEvent(String marker, LogLevel logLevel, String sourceClass, Date date, String threadName, String message,
+			Throwable throwable) {
+		this.marker = marker;
 		this.logLevel = logLevel;
 		this.sourceClass = sourceClass;
 		this.date = date;
 		this.threadName = threadName;
 		this.message = message;
 		this.throwable = throwable;
+	}
+
+	/**
+	 * Get marker if present
+	 *
+	 * @return marker if present or null
+	 */
+	public String getMarker() {
+		return marker;
 	}
 
 	/**
