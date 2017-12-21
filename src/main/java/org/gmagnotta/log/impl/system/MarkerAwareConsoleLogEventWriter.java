@@ -33,12 +33,8 @@ public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 		if (log.getMarker().equals(marker)) {
 
 			// Get log detail
-			LogLevel logLevel = log.getLogLevel();
-			String sourceClass = log.getSourceClass();
 			Date date = log.getDate();
-			String threadName = log.getThreadName();
 			String message = log.getMessage();
-			Throwable throwable = log.getThrowable();
 
 			// Create date format
 			DateFormat dateFormatter = new SimpleDateFormat(dateFormat);
@@ -49,33 +45,11 @@ public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 			buf.append(dateFormatter.format(date));
 			buf.append(' ');
 
-			// Append Thread name
-			buf.append(threadName);
-			buf.append(' ');
-
-			// Append Level in brackets
-			buf.append('[');
-			buf.append(logLevel.toString());
-			buf.append(']');
-			buf.append(' ');
-
-			// Append name
-			buf.append(sourceClass);
-			buf.append(' ');
-
 			// Append message
 			buf.append(message);
 			buf.append(' ');
 
 			System.out.println(buf.toString());
-
-			// Check if throwable is not null
-			if (throwable != null) {
-
-				// Log throwable
-				throwable.printStackTrace();
-
-			}
 
 		}
 
