@@ -48,7 +48,7 @@ public class Logger {
 	 *            source class
 	 */
 	private Logger(Class<?> sourceClass) {
-		this.sourceClass = sourceClass.getName();
+		this(sourceClass.getName());
 	}
 
 	/**
@@ -281,17 +281,7 @@ public class Logger {
 	 */
 	private void log(LogLevel logLevel, String message) {
 
-		// Get current thread name
-		Thread currentThread = Thread.currentThread();
-
-		// Get thread name
-		String threadName = currentThread.getName();
-
-		// Create log
-		LogEvent log = new LogEvent(logLevel, sourceClass, new Date(), threadName, message);
-
-		// Call logger connector
-		log(log);
+		log(LogEvent.UNSET_MARKER, logLevel, message);
 
 	}
 	
@@ -333,17 +323,7 @@ public class Logger {
 	 */
 	private void log(LogLevel logLevel, String message, Throwable throwable) {
 
-		// Get current thread name
-		Thread currentThread = Thread.currentThread();
-
-		// Get thread name
-		String threadName = currentThread.getName();
-
-		// Create log
-		LogEvent log = new LogEvent(logLevel, sourceClass, new Date(), threadName, message, throwable);
-
-		// Call logger connector
-		log(log);
+		log(LogEvent.UNSET_MARKER, logLevel, message, throwable);
 
 	}
 	

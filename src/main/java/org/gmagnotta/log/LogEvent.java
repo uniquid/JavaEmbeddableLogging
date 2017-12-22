@@ -7,7 +7,7 @@ import java.util.Date;
  */
 public class LogEvent {
 
-	private static final String UNSET_MARKER = "UNSET";
+	public static final String UNSET_MARKER = "UNSET";
 
 	private LogLevel logLevel;
 	private String sourceClass;

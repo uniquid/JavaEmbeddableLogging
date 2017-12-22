@@ -21,7 +21,7 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 		this.logStore = logStore;
 		this.list = new LinkedList<LogEvent>();
 
-		thread = new Thread(new FileSystemSpooler(logStore, list));
+		thread = new Thread(new FileSystemSpooler(logStore, list), "FileSystemSpooler");
 		thread.setDaemon(true);
 		thread.start();
 

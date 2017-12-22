@@ -30,13 +30,20 @@ public class LogEventSpooler implements Runnable {
 					
 					// write event logger strategy
 					loggerStrategy.write(logEvent);
+					
+					// if we are interrupted we avoid to cycle to all strategies...
+					if (Thread.currentThread().isInterrupted()) {
+						
+						break;
+						
+					}
 
 				}
 
 			} catch (InterruptedException ex) {
 
 				// We were interrupted!
-				return;
+				break;
 				
 			}
 

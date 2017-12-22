@@ -99,7 +99,7 @@ public class FileSystemSpooler implements Runnable {
 
 			} catch (InterruptedException ex) {
 				
-				return;
+				break;
 				
 			}
 			

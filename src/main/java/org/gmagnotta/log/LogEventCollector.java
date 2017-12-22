@@ -9,8 +9,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class LogEventCollector {
 
-	private static final Object SYNC_OBJ = new Object();
-
 	private static LogEventCollector INSTANCE;
 
 	private LinkedBlockingQueue<LogEvent> logEventsQueue;
@@ -29,13 +27,16 @@ public class LogEventCollector {
 
 	}
 
+	/**
+	 * Creates a new instance of this class
+	 */
 	private LogEventCollector() {
 
 		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
 		this.logLevelThreshold = LogLevel.INFO;
 		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
 		this.filters = new CopyOnWriteArrayList<LogEventFilter>();
-		this.writer = new Thread(new LogEventSpooler(logEventsQueue, writers));
+		this.writer = new Thread(new LogEventSpooler(logEventsQueue, writers), "LogEventSpooler");
 
 		writer.setDaemon(true);
 		writer.start();
@@ -52,8 +53,8 @@ public class LogEventCollector {
 		// Fetch logLevel from event
 		LogLevel logLevel = logEvent.getLogLevel();
 
-		// If level is bigger than threshold add to queue
-		if (logLevel.compareTo(getLogLevelThreshold()) >= 0) {
+		// If level is higher than threshold add to queue
+		if (getLogLevelThreshold().isHigherOrEqual(logLevel)) {
 			
 			// if filters can accept the log event
 			if (canAccept(logEvent)) {
@@ -96,13 +97,9 @@ public class LogEventCollector {
 	 * 
 	 * @return log level threshold
 	 */
-	public LogLevel getLogLevelThreshold() {
+	public synchronized LogLevel getLogLevelThreshold() {
 
-		synchronized (SYNC_OBJ) {
-
-			return logLevelThreshold;
-
-		}
+		return logLevelThreshold;
 
 	}
 
@@ -111,13 +108,9 @@ public class LogEventCollector {
 	 * 
 	 * @param logLevelThreshold
 	 */
-	public void setLogLevelThreshold(LogLevel logLevelThreshold) {
+	public synchronized void setLogLevelThreshold(LogLevel logLevelThreshold) {
 
-		synchronized (SYNC_OBJ) {
-
-			this.logLevelThreshold = logLevelThreshold;
-
-		}
+		this.logLevelThreshold = logLevelThreshold;
 
 	}
 
@@ -127,13 +120,9 @@ public class LogEventCollector {
 	 * @param logEventWriter
 	 *            logger strategy
 	 */
-	public void addLogEventWriter(LogEventWriter logEventWriter) {
+	public synchronized void addLogEventWriter(LogEventWriter logEventWriter) {
 
-		synchronized (SYNC_OBJ) {
-
-			writers.add(logEventWriter);
-
-		}
+		writers.add(logEventWriter);
 
 	}
 
@@ -143,26 +132,18 @@ public class LogEventCollector {
 	 * @param logEventWriter
 	 *            logger strategy
 	 */
-	public void removeLogEventWriter(LogEventWriter logEventWriter) {
+	public synchronized void removeLogEventWriter(LogEventWriter logEventWriter) {
 
-		synchronized (SYNC_OBJ) {
-
-			writers.remove(logEventWriter);
-
-		}
+		writers.remove(logEventWriter);
 
 	}
 
 	/**
 	 * Remove all logger strategy
 	 */
-	public void removeLogEventWriters() {
+	public synchronized void clearLogEventWriters() {
 
-		synchronized (SYNC_OBJ) {
-
-			writers.clear();
-
-		}
+		writers.clear();
 
 	}
 
@@ -171,13 +152,10 @@ public class LogEventCollector {
 	 * 
 	 * @return list of {@link LogEventWriter}
 	 */
-	public List<LogEventWriter> getLogEventWriters() {
+	public synchronized List<LogEventWriter> getLogEventWriters() {
 
-		synchronized (SYNC_OBJ) {
-
-			return writers;
-
-		}
+		return writers;
+		
 	}
 
 	/**
@@ -186,13 +164,9 @@ public class LogEventCollector {
 	 * @param loggerStrategy
 	 *            logger strategy
 	 */
-	public void addLogEventFilter(LogEventFilter logEventFilter) {
+	public synchronized void addLogEventFilter(LogEventFilter logEventFilter) {
 
-		synchronized (SYNC_OBJ) {
-
-			filters.add(logEventFilter);
-
-		}
+		filters.add(logEventFilter);
 
 	}
 
@@ -202,26 +176,18 @@ public class LogEventCollector {
 	 * @param loggerStrategy
 	 *            logger strategy
 	 */
-	public void removeLogEventFilter(LogEventFilter logEventFilter) {
+	public synchronized void removeLogEventFilter(LogEventFilter logEventFilter) {
 
-		synchronized (SYNC_OBJ) {
-
-			filters.remove(logEventFilter);
-
-		}
+		filters.remove(logEventFilter);
 
 	}
 
 	/**
 	 * Remove all logger strategy
 	 */
-	public void removeLogEventFilters() {
+	public synchronized void removeLogEventFilters() {
 
-		synchronized (SYNC_OBJ) {
-
-			filters.clear();
-
-		}
+		filters.clear();
 
 	}
 
@@ -231,21 +197,32 @@ public class LogEventCollector {
 	 * @throws InterruptedException
 	 *             if thread is interrupted when waiting for termination
 	 */
-	public void stop() throws InterruptedException {
+	public synchronized void stop() throws InterruptedException {
 
-		synchronized (SYNC_OBJ) {
-			
-			// interrupt writer
-			writer.interrupt();
+		// interrupt writer
+		writer.interrupt();
 
-			for (LogEventWriter logEventWriter : writers) {
+		for (LogEventWriter logEventWriter : writers) {
 
-				logEventWriter.stop();
-
-			}
+			logEventWriter.stop();
 
 		}
 
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+
+		try {
+
+			stop();
+
+		} catch (InterruptedException e) {
+			// DO NOTHING
+		}
+
+		super.finalize();
+		
 	}
 
 }
