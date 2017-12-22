@@ -54,7 +54,7 @@ public class LogEventCollector {
 		LogLevel logLevel = logEvent.getLogLevel();
 
 		// If level is higher than threshold add to queue
-		if (getLogLevelThreshold().isHigherOrEqual(logLevel)) {
+		if (logLevel.isHigherOrEqual(getLogLevelThreshold())) {
 			
 			// if filters can accept the log event
 			if (canAccept(logEvent)) {
