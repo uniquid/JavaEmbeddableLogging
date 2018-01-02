@@ -15,17 +15,33 @@ import org.gmagnotta.log.LogLevel;
 import sun.rmi.runtime.Log;
 
 public class FileSystemSpooler implements Runnable {
-	
+
 	private static final String defaultDateFormat = "dd/MM/yyyy HH:mm:ss.SSS";
 	private static final int MAX_ELEMENTS_TO_SPOOL = 100;
 
 	private FileSystemLogStore logStore;
-	private LinkedList<LogEvent> list;
+	private LinkedList<LogEvent> logEventsQueue;
 
-	public FileSystemSpooler(FileSystemLogStore logStore, LinkedList<LogEvent> list) {
+	public FileSystemSpooler(FileSystemLogStore logStore) {
 
 		this.logStore = logStore;
-		this.list = list;
+		this.logEventsQueue = new LinkedList<LogEvent>();
+
+	}
+
+	/**
+	 * Add logEvent
+	 * 
+	 * @param logEvent
+	 */
+	public void add(LogEvent logEvent) {
+
+		synchronized (logEventsQueue) {
+
+			logEventsQueue.add(logEvent);
+			logEventsQueue.notify();
+
+		}
 
 	}
 
@@ -38,26 +54,28 @@ public class FileSystemSpooler implements Runnable {
 
 				ArrayList<LogEvent> elements = new ArrayList<LogEvent>();
 
-				synchronized (list) {
+				synchronized (logEventsQueue) {
 
-					while (list.size() == 0) {
+					while (logEventsQueue.size() == 0) {
 
-						list.wait();
+						logEventsQueue.wait();
 
 					}
 
-					// Fetch max 100 element					
-					int count = Math.min(list.size(), MAX_ELEMENTS_TO_SPOOL);
+					// Fetch max 100 element
+					int count = Math.min(logEventsQueue.size(), MAX_ELEMENTS_TO_SPOOL);
 
 					while (count-- > 0) {
 
-						LogEvent event = list.removeFirst();
+						LogEvent event = logEventsQueue.removeFirst();
 
 						elements.add(event);
 
 					}
 
 				}
+				
+				// We don't check if we were terminated here. We flush what we read before
 
 				try {
 
@@ -98,11 +116,11 @@ public class FileSystemSpooler implements Runnable {
 				}
 
 			} catch (InterruptedException ex) {
-				
+
 				break;
-				
+
 			}
-			
+
 		}
 
 	}
