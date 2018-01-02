@@ -76,7 +76,7 @@ public class ConsoleLogEventWriter implements LogEventWriter {
 	}
 
 	@Override
-	public void stop() throws InterruptedException {
+	public void stop() {
 		// NOTHING TO DO
 	}
 

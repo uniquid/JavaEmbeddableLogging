@@ -40,7 +40,7 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	}
 
 	@Override
-	public void stop() throws InterruptedException {
+	public void stop() {
 
 		// Interrupt spooler
 		thread.interrupt();
