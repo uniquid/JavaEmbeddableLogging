@@ -5,7 +5,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Collects all LogEvent in the system
+ * Collects all LogEvent in the system and spools them to registered
+ * LogEventWriters
  */
 public class LogEventCollector {
 
@@ -21,6 +22,7 @@ public class LogEventCollector {
 
 		if (INSTANCE == null) {
 			INSTANCE = new LogEventCollector();
+			INSTANCE.start();
 		}
 
 		return INSTANCE;
@@ -36,10 +38,6 @@ public class LogEventCollector {
 		this.logLevelThreshold = LogLevel.INFO;
 		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
 		this.filters = new CopyOnWriteArrayList<LogEventFilter>();
-		this.writer = new Thread(new LogEventSpooler(logEventsQueue, writers), "LogEventSpooler");
-
-		writer.setDaemon(true);
-		writer.start();
 
 	}
 
@@ -55,41 +53,42 @@ public class LogEventCollector {
 
 		// If level is higher than threshold add to queue
 		if (logLevel.isHigherOrEqual(getLogLevelThreshold())) {
-			
+
 			// if filters can accept the log event
 			if (canAccept(logEvent)) {
 
 				logEventsQueue.add(logEvent);
-			
+
 			}
-			
+
 		}
 
 	}
-	
+
 	/**
-	 * Utility method that fails as long as there is a filter that can't accept the event
+	 * Utility method that fails as long as there is a filter that can't accept
+	 * the event
 	 * 
 	 * @param logEvent
 	 * @return
 	 */
 	private boolean canAccept(LogEvent logEvent) {
-		
+
 		boolean canAccept = true;
-		
+
 		for (LogEventFilter filter : filters) {
 
 			if (!filter.accept(logEvent)) {
 
 				canAccept = false;
 				break;
-			
+
 			}
-		
+
 		}
-		
+
 		return canAccept;
-		
+
 	}
 
 	/**
@@ -155,7 +154,7 @@ public class LogEventCollector {
 	public synchronized List<LogEventWriter> getLogEventWriters() {
 
 		return writers;
-		
+
 	}
 
 	/**
@@ -192,6 +191,22 @@ public class LogEventCollector {
 	}
 
 	/**
+	 * Start the LogEventCollector's spooler
+	 */
+	public synchronized void start() {
+
+		// if writer thread is not alive, create a new thread and start it
+		if (writer == null || !writer.isAlive()) {
+
+			writer = new Thread(new LogEventSpooler(logEventsQueue, writers), "LogEventSpooler");
+
+			writer.start();
+
+		}
+
+	}
+
+	/**
 	 * Stop logger and wait for all logger thread termination
 	 * 
 	 * @throws InterruptedException
@@ -202,27 +217,6 @@ public class LogEventCollector {
 		// interrupt writer
 		writer.interrupt();
 
-		for (LogEventWriter logEventWriter : writers) {
-
-			logEventWriter.stop();
-
-		}
-
-	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-
-		try {
-
-			stop();
-
-		} catch (InterruptedException e) {
-			// DO NOTHING
-		}
-
-		super.finalize();
-		
 	}
 
 }
