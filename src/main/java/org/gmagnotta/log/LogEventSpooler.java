@@ -13,11 +13,13 @@ public class LogEventSpooler implements Runnable {
 
 	private BlockingQueue<LogEvent> logEventsQueue;
 	private List<LogEventWriter> writers;
+	private final Object syncObject;
 
 	public LogEventSpooler() {
 
 		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
 		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
+		this.syncObject = new Object();
 
 	}
 
@@ -42,6 +44,12 @@ public class LogEventSpooler implements Runnable {
 
 		writers.add(logEventWriter);
 
+		synchronized (syncObject) {
+
+			syncObject.notify();
+
+		}
+
 	}
 
 	/**
@@ -54,6 +62,12 @@ public class LogEventSpooler implements Runnable {
 
 		writers.remove(logEventWriter);
 
+		synchronized (syncObject) {
+
+			syncObject.notify();
+
+		}
+
 	}
 
 	/**
@@ -62,6 +76,12 @@ public class LogEventSpooler implements Runnable {
 	public void clearLogEventWriters() {
 
 		writers.clear();
+
+		synchronized (syncObject) {
+
+			syncObject.notify();
+
+		}
 
 	}
 
@@ -82,6 +102,17 @@ public class LogEventSpooler implements Runnable {
 		while (!Thread.currentThread().isInterrupted()) {
 
 			try {
+
+				// This prevents to loose logEvent if there is no writer listening
+				synchronized (syncObject) {
+
+					while (writers.isEmpty()) {
+
+						syncObject.wait();
+
+					}
+
+				}
 
 				LogEvent logEvent = logEventsQueue.take();
 
