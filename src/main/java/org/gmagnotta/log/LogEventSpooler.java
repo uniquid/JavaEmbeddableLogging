@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Spooler class that takes log events from the queue and send them to each logger strategy
+ * Spooler class that takes log events from the queue and send them to each
+ * logger strategy
  */
 public class LogEventSpooler implements Runnable {
 
@@ -24,18 +25,19 @@ public class LogEventSpooler implements Runnable {
 			try {
 
 				LogEvent logEvent = logEventsQueue.take();
-				
+
 				// Get next logger strategy
 				for (LogEventWriter loggerStrategy : strategies) {
-					
+
 					// write event logger strategy
 					loggerStrategy.write(logEvent);
-					
-					// if we are interrupted we avoid to cycle to all strategies...
+
+					// if we are interrupted we avoid to cycle to all
+					// strategies...
 					if (Thread.currentThread().isInterrupted()) {
-						
-						break;
-						
+
+						throw new InterruptedException();
+
 					}
 
 				}
@@ -44,7 +46,7 @@ public class LogEventSpooler implements Runnable {
 
 				// We were interrupted!
 				break;
-				
+
 			}
 
 		}
