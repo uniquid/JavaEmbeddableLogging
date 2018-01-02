@@ -2,7 +2,6 @@ package org.gmagnotta.log;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Collects all LogEvent in the system and spools them to registered
@@ -12,10 +11,9 @@ public class LogEventCollector {
 
 	private static LogEventCollector INSTANCE;
 
-	private LinkedBlockingQueue<LogEvent> logEventsQueue;
 	private LogLevel logLevelThreshold;
-	private List<LogEventWriter> writers;
 	private List<LogEventFilter> filters;
+	private LogEventSpooler logEventSpooler;
 	private Thread writer;
 
 	public static synchronized LogEventCollector getInstance() {
@@ -34,9 +32,8 @@ public class LogEventCollector {
 	 */
 	private LogEventCollector() {
 
-		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
+		this.logEventSpooler = new LogEventSpooler();
 		this.logLevelThreshold = LogLevel.INFO;
-		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
 		this.filters = new CopyOnWriteArrayList<LogEventFilter>();
 
 	}
@@ -57,7 +54,7 @@ public class LogEventCollector {
 			// if filters can accept the log event
 			if (canAccept(logEvent)) {
 
-				logEventsQueue.add(logEvent);
+				logEventSpooler.addLogEvent(logEvent);
 
 			}
 
@@ -119,9 +116,9 @@ public class LogEventCollector {
 	 * @param logEventWriter
 	 *            logger strategy
 	 */
-	public synchronized void addLogEventWriter(LogEventWriter logEventWriter) {
+	public void addLogEventWriter(LogEventWriter logEventWriter) {
 
-		writers.add(logEventWriter);
+		logEventSpooler.addLogEventWriter(logEventWriter);
 
 	}
 
@@ -131,18 +128,18 @@ public class LogEventCollector {
 	 * @param logEventWriter
 	 *            logger strategy
 	 */
-	public synchronized void removeLogEventWriter(LogEventWriter logEventWriter) {
+	public void removeLogEventWriter(LogEventWriter logEventWriter) {
 
-		writers.remove(logEventWriter);
+		logEventSpooler.removeLogEventWriter(logEventWriter);
 
 	}
 
 	/**
 	 * Remove all logger strategy
 	 */
-	public synchronized void clearLogEventWriters() {
+	public void clearLogEventWriters() {
 
-		writers.clear();
+		logEventSpooler.clearLogEventWriters();
 
 	}
 
@@ -151,9 +148,9 @@ public class LogEventCollector {
 	 * 
 	 * @return list of {@link LogEventWriter}
 	 */
-	public synchronized List<LogEventWriter> getLogEventWriters() {
+	public List<LogEventWriter> getLogEventWriters() {
 
-		return writers;
+		return logEventSpooler.getLogEventWriters();
 
 	}
 
@@ -184,7 +181,7 @@ public class LogEventCollector {
 	/**
 	 * Remove all logger strategy
 	 */
-	public synchronized void removeLogEventFilters() {
+	public synchronized void clearLogEventFilters() {
 
 		filters.clear();
 
@@ -198,7 +195,7 @@ public class LogEventCollector {
 		// if writer thread is not alive, create a new thread and start it
 		if (writer == null || !writer.isAlive()) {
 
-			writer = new Thread(new LogEventSpooler(logEventsQueue, writers), "LogEventSpooler");
+			writer = new Thread(logEventSpooler, "LogEventSpooler");
 
 			writer.start();
 
