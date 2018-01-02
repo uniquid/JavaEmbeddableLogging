@@ -13,10 +13,7 @@ public interface LogEventWriter {
 	public void write(LogEvent log);
 
 	/**
-	 * Stop logger strategy and wait for its thread termination
-	 * 
-	 * @throws InterruptedException
-	 *             if thread in interrupted waiting for thread termination
+	 * Stop logger strategy
 	 */
-	public void stop() throws InterruptedException;
+	public void stop();
 }
