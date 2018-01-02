@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.gmagnotta.log.LogEvent;
@@ -13,16 +12,15 @@ import org.gmagnotta.log.LogEventWriter;
 public class FileSystemLogEventWriter implements LogEventWriter {
 
 	private FileSystemLogStore logStore;
-	private LinkedList<LogEvent> list;
 	private Thread thread;
+	private FileSystemSpooler fileSystemSpooler;
 
 	public FileSystemLogEventWriter(FileSystemLogStore logStore) throws FileNotFoundException {
 
 		this.logStore = logStore;
-		this.list = new LinkedList<LogEvent>();
+		this.fileSystemSpooler = new FileSystemSpooler(logStore);
 
-		thread = new Thread(new FileSystemSpooler(logStore, list), "FileSystemSpooler");
-		thread.setDaemon(true);
+		thread = new Thread(fileSystemSpooler, "FileSystemSpooler");
 		thread.start();
 
 	}
@@ -30,12 +28,7 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	@Override
 	public void write(LogEvent log) {
 
-		synchronized (list) {
-
-			list.add(log);
-			list.notify();
-
-		}
+		fileSystemSpooler.add(log);
 
 	}
 
