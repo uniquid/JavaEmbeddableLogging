@@ -1,6 +1,8 @@
 package org.gmagnotta.log;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -9,12 +11,69 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class LogEventSpooler implements Runnable {
 
-	private LinkedBlockingQueue<LogEvent> logEventsQueue;
-	private List<LogEventWriter> strategies;
+	private BlockingQueue<LogEvent> logEventsQueue;
+	private List<LogEventWriter> writers;
 
-	public LogEventSpooler(LinkedBlockingQueue<LogEvent> logEventsQueue, List<LogEventWriter> strategies) {
-		this.logEventsQueue = logEventsQueue;
-		this.strategies = strategies;
+	public LogEventSpooler() {
+
+		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
+		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
+
+	}
+
+	/**
+	 * Add a LogEvent to the queue
+	 * 
+	 * @param logEvent
+	 */
+	public void addLogEvent(LogEvent logEvent) {
+
+		logEventsQueue.add(logEvent);
+
+	}
+
+	/**
+	 * Add given logger strategy
+	 * 
+	 * @param logEventWriter
+	 *            logger strategy
+	 */
+	public void addLogEventWriter(LogEventWriter logEventWriter) {
+
+		writers.add(logEventWriter);
+
+	}
+
+	/**
+	 * Remove given logger strategy
+	 * 
+	 * @param logEventWriter
+	 *            logger strategy
+	 */
+	public void removeLogEventWriter(LogEventWriter logEventWriter) {
+
+		writers.remove(logEventWriter);
+
+	}
+
+	/**
+	 * Remove all logger strategy
+	 */
+	public void clearLogEventWriters() {
+
+		writers.clear();
+
+	}
+
+	/**
+	 * Get all logger strategies
+	 * 
+	 * @return list of {@link LogEventWriter}
+	 */
+	public List<LogEventWriter> getLogEventWriters() {
+
+		return writers;
+
 	}
 
 	@Override
@@ -27,7 +86,7 @@ public class LogEventSpooler implements Runnable {
 				LogEvent logEvent = logEventsQueue.take();
 
 				// Get next logger strategy
-				for (LogEventWriter loggerStrategy : strategies) {
+				for (LogEventWriter loggerStrategy : writers) {
 
 					// write event logger strategy
 					loggerStrategy.write(logEvent);
