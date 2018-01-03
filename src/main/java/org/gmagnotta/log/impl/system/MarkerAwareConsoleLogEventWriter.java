@@ -6,7 +6,6 @@ import java.util.Date;
 
 import org.gmagnotta.log.LogEvent;
 import org.gmagnotta.log.LogEventWriter;
-import org.gmagnotta.log.LogLevel;
 
 public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 
