@@ -2,34 +2,44 @@ package org.gmagnotta.log.impl.system;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.gmagnotta.log.LogEvent;
 import org.gmagnotta.log.LogEventWriter;
+import org.gmagnotta.log.LogLevel;
 
 public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 
 	private static final String defaultDateFormat = "dd/MM/yyyy HH:mm:ss.SSS";
 
-	private String marker;
+	private List<String> markers;
 	private String dateFormat;
 
 	public MarkerAwareConsoleLogEventWriter(String marker) {
 
-		this(defaultDateFormat, marker);
+		this(defaultDateFormat, toListString(marker));
+
+	}
+	
+	public MarkerAwareConsoleLogEventWriter(List<String> markers) {
+
+		this(defaultDateFormat, markers);
 
 	}
 
-	public MarkerAwareConsoleLogEventWriter(String dateFormat, String marker) {
+	public MarkerAwareConsoleLogEventWriter(String dateFormat, List<String> markers) {
 
 		this.dateFormat = dateFormat;
-		this.marker = marker;
+		this.markers = markers;
 	}
 
 	@Override
 	public synchronized void write(LogEvent log) {
 
-		if (log.getMarker().equals(marker)) {
+		if (markers.contains(log.getMarker()) &&
+				log.getLogLevel().isHigherOrEqual(LogLevel.INFO)) {
 
 			// Get log detail
 			Date date = log.getDate();
@@ -57,6 +67,15 @@ public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 	@Override
 	public void stop() {
 		// NOTHING TO DO
+	}
+	
+	private static List<String> toListString(String string) {
+		
+		List<String> list = new ArrayList<String>();
+		list.add(string);
+		
+		return list;
+		
 	}
 
 }
