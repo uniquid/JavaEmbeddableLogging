@@ -15,7 +15,9 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.gmagnotta.log.LogEvent;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -153,12 +155,23 @@ public class ElasticSearchLogClient {
      */
     public void putLogEvent(String index, String app, LogEvent logEvent) {
         IndexRequest request = new IndexRequest(index, "_doc", null);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos, true)) {
+            Throwable throwable = logEvent.getThrowable();
+            ps.println(logEvent.getMessage());
+            if (throwable != null) {
+                throwable.printStackTrace(ps);
+            }
+        }
+        String message = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+
         request.source("date", logEvent.getDate().getTime(),
                 "app", app,
                 "logLevel", logEvent.getLogLevel(),
                 "sourceClass", logEvent.getSourceClass(),
                 "thread", logEvent.getThreadName(),
-                "message", logEvent.getMessage());
+                "message", message);
         bulkProcessor.add(request);
     }
 
