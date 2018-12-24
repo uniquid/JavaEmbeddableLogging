@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 
 public class ElasticSearchLogClient {
 
+    private static final String TYPE = "_doc";
+
     private URL elasticSearchUrl;
     private RestHighLevelClient client;
     private BulkProcessor bulkProcessor;
@@ -90,7 +92,7 @@ public class ElasticSearchLogClient {
      */
     public void createLogIndex(String index) throws IOException {
         CreateIndexRequest request = new CreateIndexRequest(index);
-        request.mapping("_doc",
+        request.mapping(TYPE,
                 "date", "type=date",
                 "logLevel", "type=keyword");
 
@@ -152,7 +154,7 @@ public class ElasticSearchLogClient {
      */
     public void putLogEvent(String index, String app, LogEvent logEvent) {
         if (bulkProcessor != null) {
-            IndexRequest request = new IndexRequest(index, "_doc", null);
+            IndexRequest request = new IndexRequest(index, TYPE, null);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (PrintStream ps = new PrintStream(baos, true)) {
