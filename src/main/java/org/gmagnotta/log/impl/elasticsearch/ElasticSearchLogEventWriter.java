@@ -31,6 +31,11 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
         }
     }
 
+    @Override
+    public void setLogName(String logName) {
+        renameIndex(logName);
+    }
+
     /**
      * Start elastic search writer
      *
@@ -38,9 +43,17 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
      * @param index                 index name where log events will be putted
      * @param app                   application name
      */
-    public boolean start(URL elasticSearchUrl, String index, String app) {
-        if (elasticSearchUrl == null || Strings.isNullOrEmpty(index) || Strings.isNullOrEmpty(app)) {
-            return false;
+    public ElasticSearchLogEventWriter(URL elasticSearchUrl, String index, String app) {
+        if (elasticSearchUrl == null) {
+            throw new IllegalArgumentException("Elasticsearch url can't be null");
+        }
+
+        if (Strings.isNullOrEmpty(index)) {
+            throw new IllegalArgumentException("Index can't be null or empty");
+        }
+
+        if (Strings.isNullOrEmpty(app)) {
+            throw new IllegalArgumentException("App can't be null or empty");
         }
 
         try {
@@ -54,19 +67,21 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return true;
     }
 
-    public String getIndex() {
-        return index;
-    }
-
-    public boolean setIndex(String newIndex) {
+    /**
+     * Method allows to set index name, where to put log messages
+     * In case if some messages already was written on old index
+     * they will be moved (reindex) to new index and delete old
+     * index.
+     *
+     * @param newIndex      new name of index
+     * @return
+     */
+    public boolean renameIndex(String newIndex) {
         if (client == null || Strings.isNullOrEmpty(newIndex)) {
             return false;
         }
-
-        String oldIndex = this.index;
 
         // ElasticSearch doesn't have renaming operation, so we need to create new index,
         // move all documents to new index and delete old index.
@@ -74,25 +89,35 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
             if (!client.isLogIndexExist(newIndex)) {
                 client.createLogIndex(newIndex);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        String oldIndex = this.index;
+        this.index = newIndex;
 
         // Since moving documents can take much time, we run this task in separated
         // thread as async operation.
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
+                // Send all buffered events to elasticsearch before switching to new index
+                client.flushLogEvents();
+
+                // After flush, documents have to be processed by elasticsearch node
+                // so we wait for 3 seconds before reindex. I wasn't able to find any
+                // better solution.
+                Thread.sleep(3000);
+
                 // if prev index exist - reindex documents to new index
                 if (oldIndex != null) {
                     client.reIndexLog(oldIndex, newIndex);
                     client.deleteLogIndex(oldIndex);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
 
-        this.index = newIndex;
         return true;
     }
 }

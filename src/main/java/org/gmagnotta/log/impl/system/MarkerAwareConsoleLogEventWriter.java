@@ -68,10 +68,15 @@ public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 	public void stop() {
 		// NOTHING TO DO
 	}
-	
+
+	@Override
+	public void setLogName(String logName) {
+		// NOTHING TO DO
+	}
+
 	private static List<String> toListString(String string) {
 		
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		list.add(string);
 		
 		return list;

@@ -15,9 +15,7 @@ import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.gmagnotta.log.LogEvent;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -29,27 +27,10 @@ public class ElasticSearchLogClient {
     private RestHighLevelClient client;
     private BulkProcessor bulkProcessor;
 
-    private BulkProcessor.Listener listener = new BulkProcessor.Listener() {
-        @Override
-        public void beforeBulk(long executionId, BulkRequest request) {
-
-        }
-
-        @Override
-        public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-
-        }
-
-        @Override
-        public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-
-        }
-    };
-
     /**
      * Constructor
      *
-     * @param url      url of elastic search
+     * @param url      url of elasticsearch master-node
      */
     public ElasticSearchLogClient(URL url) {
         elasticSearchUrl = url;
@@ -57,16 +38,32 @@ public class ElasticSearchLogClient {
         RestClientBuilder clientBuilder = RestClient.builder(host);
         client = new RestHighLevelClient(clientBuilder);
 
+        final BulkProcessor.Listener bulkListener = new BulkProcessor.Listener() {
+            @Override
+            public void beforeBulk(long executionId, BulkRequest request) {
+                // Stub - Do nothing
+            }
+
+            @Override
+            public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
+                // Stub - Do nothing
+            }
+
+            @Override
+            public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+                // Stub - Do nothing
+            }
+        };
+
         BulkProcessor.Builder bulkBuilder = BulkProcessor.builder(
-                (request, bulkListener) ->
-                        client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener),
-                listener);
+                (request, listener) -> client.bulkAsync(request, RequestOptions.DEFAULT, listener),
+                bulkListener);
 
         // Configure elastic search bulk processor
         // More info https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-document-bulk.html
         bulkBuilder.setBulkActions(500);    // flush bulk when reach number of actions
         bulkBuilder.setBulkSize(new ByteSizeValue(5L, ByteSizeUnit.MB));   // flush bulk request when reach size
-        bulkBuilder.setConcurrentRequests(0);   // use only single request to send bulk actions
+        bulkBuilder.setConcurrentRequests(1);   // use only single request to send bulk actions
         bulkBuilder.setFlushInterval(TimeValue.timeValueSeconds(10L));  // flush bulk request when reach time
         bulkBuilder.setBackoffPolicy(BackoffPolicy.constantBackoff(TimeValue.timeValueSeconds(1L), 3));
 
@@ -88,7 +85,7 @@ public class ElasticSearchLogClient {
     /**
      * Method create index with given name
      *
-     * @param index     index name to create
+     * @param index         index name to create
      * @throws IOException
      */
     public void createLogIndex(String index) throws IOException {
@@ -104,7 +101,7 @@ public class ElasticSearchLogClient {
     /**
      * Method delete index by name
      *
-     * @param index     index name to delete
+     * @param index         index name to delete
      * @throws IOException
      */
     public void deleteLogIndex(String index) throws IOException {
@@ -149,32 +146,51 @@ public class ElasticSearchLogClient {
     /**
      * Method send log event to elastic search
      *
-     * @param index     index name where log event need to be putted
-     * @param app       application name
-     * @param logEvent  log event that need to be putted
+     * @param index         index name where log event need to be putted
+     * @param app           application name
+     * @param logEvent      log event that need to be putted
      */
     public void putLogEvent(String index, String app, LogEvent logEvent) {
-        IndexRequest request = new IndexRequest(index, "_doc", null);
+        if (bulkProcessor != null) {
+            IndexRequest request = new IndexRequest(index, "_doc", null);
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream ps = new PrintStream(baos, true)) {
-            Throwable throwable = logEvent.getThrowable();
-            ps.println(logEvent.getMessage());
-            if (throwable != null) {
-                throwable.printStackTrace(ps);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (PrintStream ps = new PrintStream(baos, true)) {
+                Throwable throwable = logEvent.getThrowable();
+                ps.println(logEvent.getMessage());
+                if (throwable != null) {
+                    throwable.printStackTrace(ps);
+                }
             }
-        }
-        String message = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+            String message = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
 
-        request.source("date", logEvent.getDate().getTime(),
-                "app", app,
-                "logLevel", logEvent.getLogLevel(),
-                "sourceClass", logEvent.getSourceClass(),
-                "thread", logEvent.getThreadName(),
-                "message", message);
-        bulkProcessor.add(request);
+            request.source("date", logEvent.getDate().getTime(),
+                    "app", app,
+                    "logLevel", logEvent.getLogLevel(),
+                    "sourceClass", logEvent.getSourceClass(),
+                    "thread", logEvent.getThreadName(),
+                    "message", message);
+            bulkProcessor.add(request);
+        }
     }
 
+    /**
+     * Method to force send pending messages buffered in
+     * bulk processor
+     */
+    public void flushLogEvents() {
+        if (bulkProcessor != null) {
+            bulkProcessor.flush();
+        }
+    }
+
+    /**
+     * Method check, if index exist
+     *
+     * @param indexName     index name for check
+     * @return              true in case if index with given name exist
+     * @throws IOException
+     */
     public boolean isLogIndexExist(String indexName) throws IOException {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(indexName);
