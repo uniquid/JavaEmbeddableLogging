@@ -11,6 +11,12 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Log client based on elastic search
+ * Java Low Level REST Client 6.5
+ *
+ * @see <a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.5/java-rest-low-usage-requests.html">ES Low Level Client</a>
+ */
 public class ElasticSearchLogClient {
 
     private static final String TYPE = "_doc";
