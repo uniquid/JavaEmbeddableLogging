@@ -1,6 +1,6 @@
 package org.gmagnotta.log.impl.elasticsearch;
 
-import org.elasticsearch.common.Strings;
+import org.apache.logging.log4j.util.Strings;
 import org.gmagnotta.log.LogEvent;
 import org.gmagnotta.log.LogEventWriter;
 
@@ -18,7 +18,11 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
     @Override
     public void write(LogEvent logEvent) {
         if (client != null && logEvent != null) {
-            client.putLogEvent(index, app, logEvent);
+            try {
+                client.putLogEvent(index, app, logEvent);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -48,11 +52,11 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
             throw new IllegalArgumentException("Elasticsearch url can't be null");
         }
 
-        if (Strings.isNullOrEmpty(index)) {
+        if (Strings.isBlank(index)) {
             throw new IllegalArgumentException("Index can't be null or empty");
         }
 
-        if (Strings.isNullOrEmpty(app)) {
+        if (Strings.isBlank(app)) {
             throw new IllegalArgumentException("App can't be null or empty");
         }
 
@@ -79,7 +83,7 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
      * @return
      */
     public boolean renameIndex(String newIndex) {
-        if (client == null || Strings.isNullOrEmpty(newIndex)) {
+        if (client == null || Strings.isBlank(newIndex)) {
             return false;
         }
 
