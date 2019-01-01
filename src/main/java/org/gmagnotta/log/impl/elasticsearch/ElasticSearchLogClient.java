@@ -16,6 +16,12 @@ import java.net.URL;
  * Java Low Level REST Client 6.5
  *
  * @see <a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.5/java-rest-low-usage-requests.html">ES Low Level Client</a>
+ *
+ * More info about api here:
+ * https://www.elastic.co/blog/a-practical-introduction-to-elasticsearch
+ * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-create-index.html
+ * https://discuss.elastic.co/t/delete-logs-in-elasticsearch-after-certain-period/75067
+ * https://www.lindstromhenrik.com/running-elasticsearch-curator-as-an-aws-lambda-function/ 
  */
 public class ElasticSearchLogClient {
 
