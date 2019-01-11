@@ -80,4 +80,9 @@ public class ConsoleLogEventWriter implements LogEventWriter {
 		// NOTHING TO DO
 	}
 
+	@Override
+	public void setLogName(String logName) {
+		// NOTHING TO DO
+	}
+
 }

@@ -15,7 +15,7 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	private Thread thread;
 	private FileSystemSpooler fileSystemSpooler;
 
-	public FileSystemLogEventWriter(FileSystemLogStore logStore) throws FileNotFoundException {
+	public FileSystemLogEventWriter(FileSystemLogStore logStore) {
 
 		this.logStore = logStore;
 		this.fileSystemSpooler = new FileSystemSpooler(logStore);
@@ -38,6 +38,11 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 		// Interrupt spooler
 		thread.interrupt();
 
+	}
+
+	@Override
+	public void setLogName(String logName) {
+		// NOTHING TO DO
 	}
 
 	/**
@@ -96,9 +101,6 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	 *            output stream on which write data
 	 * @param bufferSize
 	 *            buffer size
-	 * @param quietCloseStreams
-	 *            true if streams have to be quietly close after transfer (also
-	 *            in case of errors); false to keep streams opened
 	 * @throws IOException
 	 *             if an error occurs during transfer
 	 */

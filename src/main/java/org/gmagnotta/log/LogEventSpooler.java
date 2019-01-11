@@ -17,8 +17,8 @@ public class LogEventSpooler implements Runnable {
 
 	public LogEventSpooler() {
 
-		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
-		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
+		this.logEventsQueue = new LinkedBlockingQueue<>();
+		this.writers = new CopyOnWriteArrayList<>();
 		this.syncObject = new Object();
 
 	}
@@ -94,6 +94,16 @@ public class LogEventSpooler implements Runnable {
 
 		return writers;
 
+	}
+
+	/**
+	 * Set log name to all writers
+	 * @param logName
+	 */
+	public void setLogName(String logName) {
+		for (LogEventWriter writer : writers) {
+			writer.setLogName(logName);
+		}
 	}
 
 	@Override
