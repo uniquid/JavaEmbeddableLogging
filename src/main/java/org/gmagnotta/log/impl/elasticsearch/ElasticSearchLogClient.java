@@ -1,5 +1,6 @@
 package org.gmagnotta.log.impl.elasticsearch;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.StatusLine;
 import org.elasticsearch.client.Request;
@@ -145,7 +146,7 @@ public class ElasticSearchLogClient {
             }
         }
         String message = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
-        message = message.replace("\n", "\\n");
+        message = StringEscapeUtils.escapeJava(message);
 
         String body = "{" +
                       "    \"date\" : \"" + logEvent.getDate().getTime() + "\"," +
