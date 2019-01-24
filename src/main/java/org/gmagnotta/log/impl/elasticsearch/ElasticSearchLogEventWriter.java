@@ -14,10 +14,11 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
     private String index;
     private String app;
     private ElasticSearchLogClient client;
+    private boolean stopped = false;
 
     @Override
     public void write(LogEvent logEvent) {
-        if (client != null && logEvent != null) {
+        if (client != null && logEvent != null && !stopped) {
             try {
                 client.putLogEvent(index, app, logEvent);
             } catch (IOException | InterruptedException e) {
@@ -28,16 +29,18 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
 
     @Override
     public void stop() {
-        try {
-            client.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        stopped = true;
     }
 
-    @Override
-    public void setLogName(String logName) {
-        renameIndex(logName);
+    public void deleteLog() {
+        if (client != null) {
+            try {
+                // Delete log index (index exists only during the organization lifetime
+                client.deleteLogIndex(index);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -83,7 +86,7 @@ public class ElasticSearchLogEventWriter implements LogEventWriter {
      * @return
      */
     public boolean renameIndex(String newIndex) {
-        if (client == null || Strings.isBlank(newIndex)) {
+        if (client == null || Strings.isBlank(newIndex) || stopped) {
             return false;
         }
 

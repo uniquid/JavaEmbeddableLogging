@@ -28,6 +28,7 @@ public class BulkProcessor implements Runnable {
 
     private final Object waitSync = new Object();
     private Thread bulkThread;
+    private boolean shutdown = false;
 
     /**
      * Constructor
@@ -101,6 +102,10 @@ public class BulkProcessor implements Runnable {
      * @throws IOException
      */
     public void flush() throws IOException, InterruptedException {
+        if (shutdown) {
+            return;
+        }
+
         if (bulkThread.isInterrupted()) {
             throw new BulkInterruptedException();
         }
@@ -157,28 +162,38 @@ public class BulkProcessor implements Runnable {
     public void setFlushInterval(long flushInterval) {
         synchronized (waitSync) {
             this.flushInterval = flushInterval;
-            waitSync.notify();
+            waitSync.notifyAll();
         }
     }
 
     /**
      * Method close/interrupt bulk processor
      */
-    public void close() {
+    public void close() throws InterruptedException {
+        synchronized (waitSync) {
+            shutdown = true;
+            waitSync.notifyAll();
+        }
+        bulkThread.join(flushInterval * 1000);
         bulkThread.interrupt();
     }
 
+    /**
+     * Method-thread send log events to elasticsearch
+     * sending based on value of flashInterval.
+     */
     @Override
     public void run() {
-        while(!Thread.currentThread().isInterrupted()) {
+        while(!Thread.currentThread().isInterrupted() && !shutdown) {
             try {
                 flush();
-                synchronized (waitSync) {
-                    if (flushInterval < 0) {
+                if (flushInterval < 0) {
+                    synchronized (waitSync) {
                         waitSync.wait();
                     }
+                } else {
+                    Thread.sleep(flushInterval * 1000);
                 }
-                Thread.sleep(flushInterval * 1000);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
