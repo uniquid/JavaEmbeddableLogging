@@ -16,9 +16,4 @@ public interface LogEventWriter {
 	 * Stop logger strategy
 	 */
 	public void stop();
-
-	/**
-	 * Set log name
-	 */
-	public void setLogName(String logName);
 }

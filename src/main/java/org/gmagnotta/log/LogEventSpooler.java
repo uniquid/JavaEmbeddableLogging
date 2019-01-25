@@ -96,16 +96,6 @@ public class LogEventSpooler implements Runnable {
 
 	}
 
-	/**
-	 * Set log name to all writers
-	 * @param logName
-	 */
-	public void setLogName(String logName) {
-		for (LogEventWriter writer : writers) {
-			writer.setLogName(logName);
-		}
-	}
-
 	@Override
 	public void run() {
 

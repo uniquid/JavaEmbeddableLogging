@@ -213,9 +213,4 @@ public class LogEventCollector {
 		writer.interrupt();
 
 	}
-
-
-	public void setLogName(String logName) {
-		logEventSpooler.setLogName(logName);
-	}
 }

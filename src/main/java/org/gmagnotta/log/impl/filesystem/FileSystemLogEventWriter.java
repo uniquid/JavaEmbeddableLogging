@@ -1,9 +1,6 @@
 package org.gmagnotta.log.impl.filesystem;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.List;
 
 import org.gmagnotta.log.LogEvent;
@@ -38,11 +35,6 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 		// Interrupt spooler
 		thread.interrupt();
 
-	}
-
-	@Override
-	public void setLogName(String logName) {
-		// NOTHING TO DO
 	}
 
 	/**

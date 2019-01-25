@@ -51,7 +51,7 @@ public class ElasticSearchLogClient {
      *
      * @throws IOException
      */
-    public void close() throws IOException {
+    public void close() throws IOException, InterruptedException {
         bulkProcessor.close();
         client.close();
     }

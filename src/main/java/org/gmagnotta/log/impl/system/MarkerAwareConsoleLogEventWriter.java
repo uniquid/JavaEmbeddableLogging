@@ -12,20 +12,20 @@ import org.gmagnotta.log.LogLevel;
 
 public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 
-	private static final String defaultDateFormat = "dd/MM/yyyy HH:mm:ss.SSS";
+	private static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy HH:mm:ss.SSS";
 
 	private List<String> markers;
 	private String dateFormat;
 
 	public MarkerAwareConsoleLogEventWriter(String marker) {
 
-		this(defaultDateFormat, toListString(marker));
+		this(DEFAULT_DATE_FORMAT, toListString(marker));
 
 	}
 	
 	public MarkerAwareConsoleLogEventWriter(List<String> markers) {
 
-		this(defaultDateFormat, markers);
+		this(DEFAULT_DATE_FORMAT, markers);
 
 	}
 
@@ -66,11 +66,6 @@ public class MarkerAwareConsoleLogEventWriter implements LogEventWriter {
 
 	@Override
 	public void stop() {
-		// NOTHING TO DO
-	}
-
-	@Override
-	public void setLogName(String logName) {
 		// NOTHING TO DO
 	}
 
