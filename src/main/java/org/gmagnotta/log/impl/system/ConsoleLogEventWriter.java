@@ -13,12 +13,12 @@ import org.gmagnotta.log.LogEventWriter;
  */
 public class ConsoleLogEventWriter implements LogEventWriter {
 
-	private static final String defaultDateFormat = "dd/MM/yyyy HH:mm:ss.SSS";
+	private static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy HH:mm:ss.SSS";
 
 	private String dateFormat;
 
 	public ConsoleLogEventWriter() {
-		this(defaultDateFormat);
+		this(DEFAULT_DATE_FORMAT);
 	}
 
 	public ConsoleLogEventWriter(String dateFormat) {
@@ -79,5 +79,4 @@ public class ConsoleLogEventWriter implements LogEventWriter {
 	public void stop() {
 		// NOTHING TO DO
 	}
-
 }

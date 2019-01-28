@@ -17,8 +17,8 @@ public class LogEventSpooler implements Runnable {
 
 	public LogEventSpooler() {
 
-		this.logEventsQueue = new LinkedBlockingQueue<LogEvent>();
-		this.writers = new CopyOnWriteArrayList<LogEventWriter>();
+		this.logEventsQueue = new LinkedBlockingQueue<>();
+		this.writers = new CopyOnWriteArrayList<>();
 		this.syncObject = new Object();
 
 	}

@@ -34,7 +34,7 @@ public class LogEventCollector {
 
 		this.logEventSpooler = new LogEventSpooler();
 		this.logLevelThreshold = LogLevel.INFO;
-		this.filters = new CopyOnWriteArrayList<LogEventFilter>();
+		this.filters = new CopyOnWriteArrayList<>();
 
 	}
 
@@ -155,10 +155,9 @@ public class LogEventCollector {
 	}
 
 	/**
-	 * Add given logger strategy
+	 * Add given logger filter
 	 * 
-	 * @param loggerStrategy
-	 *            logger strategy
+	 * @param logEventFilter	filter to add
 	 */
 	public synchronized void addLogEventFilter(LogEventFilter logEventFilter) {
 
@@ -169,8 +168,7 @@ public class LogEventCollector {
 	/**
 	 * Remove given logger strategy
 	 * 
-	 * @param loggerStrategy
-	 *            logger strategy
+	 * @param logEventFilter	filter to remove
 	 */
 	public synchronized void removeLogEventFilter(LogEventFilter logEventFilter) {
 
@@ -209,11 +207,10 @@ public class LogEventCollector {
 	 * @throws InterruptedException
 	 *             if thread is interrupted when waiting for termination
 	 */
-	public synchronized void stop() throws InterruptedException {
+	public synchronized void stop() {
 
 		// interrupt writer
 		writer.interrupt();
 
 	}
-
 }

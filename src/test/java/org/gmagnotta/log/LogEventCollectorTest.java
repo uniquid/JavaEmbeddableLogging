@@ -47,9 +47,8 @@ public class LogEventCollectorTest {
 			@Override
 			public void stop() {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
 		});
 		
 		logEventCollector.addLogEvent(event);

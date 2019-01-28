@@ -1,9 +1,6 @@
 package org.gmagnotta.log.impl.filesystem;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.List;
 
 import org.gmagnotta.log.LogEvent;
@@ -15,7 +12,7 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	private Thread thread;
 	private FileSystemSpooler fileSystemSpooler;
 
-	public FileSystemLogEventWriter(FileSystemLogStore logStore) throws FileNotFoundException {
+	public FileSystemLogEventWriter(FileSystemLogStore logStore) {
 
 		this.logStore = logStore;
 		this.fileSystemSpooler = new FileSystemSpooler(logStore);
@@ -96,9 +93,6 @@ public class FileSystemLogEventWriter implements LogEventWriter {
 	 *            output stream on which write data
 	 * @param bufferSize
 	 *            buffer size
-	 * @param quietCloseStreams
-	 *            true if streams have to be quietly close after transfer (also
-	 *            in case of errors); false to keep streams opened
 	 * @throws IOException
 	 *             if an error occurs during transfer
 	 */
